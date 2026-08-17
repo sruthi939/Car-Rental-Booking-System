@@ -9,7 +9,7 @@ const SEQUENCE_PATH = '/car-sequence';
 const FILE_PREFIX = 'car';
 const IMAGE_EXTENSION = 'webp';
 
-// Helper for 4-digit padded filename: car_0001.webp
+// Helper for filename: car_0001.webp with fallback frame (1).jpg
 const getFilename = (index: number) => {
   const paddedIndex = String(index + 1).padStart(4, '0');
   return `${FILE_PREFIX}_${paddedIndex}.${IMAGE_EXTENSION}`;
@@ -30,8 +30,8 @@ function TextSection({ children, scrollYProgress, range, align }: TextSectionPro
 
   const getAlignmentClass = (alignment: string) => {
     switch (alignment) {
-      case 'left': return 'items-start text-left pl-6 md:pl-16';
-      case 'right': return 'items-end text-right pr-6 md:pr-16';
+      case 'left': return 'items-start text-left pl-6 md:pl-20';
+      case 'right': return 'items-end text-right pr-6 md:pr-20';
       case 'center': default: return 'items-center text-center px-6';
     }
   };
@@ -48,7 +48,7 @@ function TextSection({ children, scrollYProgress, range, align }: TextSectionPro
   );
 }
 
-export default function CarScrollytelling() {
+export default function ExploreScrollytelling() {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -63,7 +63,7 @@ export default function CarScrollytelling() {
   const [loadProgress, setLoadProgress] = useState<number>(0);
   const [canvasDimensions, setCanvasDimensions] = useState({ width: 1920, height: 1080 });
 
-  // --- 1. Preload Image Sequence ---
+  // --- 1. Preload 120 WebP Sequence Frames ---
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     let loadedCount = 0;
@@ -83,9 +83,18 @@ export default function CarScrollytelling() {
 
     for (let i = 0; i < TOTAL_FRAMES; i++) {
       const img = new Image();
-      img.src = `${SEQUENCE_PATH}/${getFilename(i)}`;
+      const primarySrc = `${SEQUENCE_PATH}/${getFilename(i)}`;
+      const fallbackSrc = `${SEQUENCE_PATH}/frame (${i + 1}).jpg`;
+      img.src = primarySrc;
       img.onload = handleLoad;
-      img.onerror = handleLoad; // Increment even on error to avoid stuck screen
+      img.onerror = () => {
+        if (!img.dataset.retried) {
+          img.dataset.retried = 'true';
+          img.src = fallbackSrc;
+        } else {
+          handleLoad();
+        }
+      };
       imageArray.push(img);
     }
 
@@ -94,7 +103,7 @@ export default function CarScrollytelling() {
     };
   }, []);
 
-  // --- 2. High-DPI & Responsive Canvas Sizing ---
+  // --- 2. High-DPI & Responsive Canvas Sizing (Contain Fit) ---
   const updateCanvasSize = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -125,7 +134,7 @@ export default function CarScrollytelling() {
     return () => window.removeEventListener('resize', updateCanvasSize);
   }, [updateCanvasSize, imagesLoaded]);
 
-  // --- 3. Optimized Canvas Frame Rendering via rAF ---
+  // --- 3. Optimized Canvas Frame Drawing via rAF ---
   const drawFrame = useCallback((frameIdx: number) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -136,13 +145,15 @@ export default function CarScrollytelling() {
     const width = canvas.width;
     const height = canvas.height;
 
-    ctx.clearRect(0, 0, width, height);
+    // Clear canvas to pure #000000
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, width, height);
 
     if (img && img.complete && img.naturalWidth > 0) {
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
 
-      // Object-fit contain math
+      // Contain fit calculation
       const hRatio = width / img.naturalWidth;
       const vRatio = height / img.naturalHeight;
       const ratio = Math.min(hRatio, vRatio);
@@ -157,13 +168,12 @@ export default function CarScrollytelling() {
     }
   }, []);
 
-  // Smooth rAF loop
+  // Smooth rAF render loop
   const renderLoop = useCallback(() => {
     const current = currentFrameRef.current;
     const target = targetFrameRef.current;
 
     if (Math.abs(current - target) > 0.01) {
-      // Smooth lerp step towards target frame
       currentFrameRef.current += (target - current) * 0.25;
       const roundedFrame = Math.min(TOTAL_FRAMES - 1, Math.max(0, Math.round(currentFrameRef.current)));
       drawFrame(roundedFrame);
@@ -182,7 +192,7 @@ export default function CarScrollytelling() {
     }
   }, [renderLoop]);
 
-  // Initial draw when loaded
+  // Initial draw when fully loaded
   useEffect(() => {
     if (imagesLoaded) {
       drawFrame(0);
@@ -211,14 +221,14 @@ export default function CarScrollytelling() {
   }, [scrollYProgress, imagesLoaded, scheduleFrameRender]);
 
   return (
-    <div ref={containerRef} className="relative h-[400vh] w-full bg-[#050505]">
+    <div ref={containerRef} className="relative h-[400vh] w-full bg-[#000000]">
 
-      {/* Loading Overlay (0% -> 100%) */}
+      {/* Preloader Screen (0% -> 100%) */}
       <AnimatePresence>
         {!imagesLoaded && (
           <motion.div
             key="preloader"
-            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#050505] text-white"
+            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#000000] text-white"
             exit={{ opacity: 0 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           >
@@ -230,10 +240,10 @@ export default function CarScrollytelling() {
               <span className="font-mono text-xs text-white/70">{loadProgress}%</span>
             </div>
             
-            <p className="text-white/50 text-xs tracking-[0.3em] uppercase font-mono mb-2">
+            <p className="text-white/50 text-xs tracking-[0.35em] uppercase font-mono mb-3">
               INITIALIZING EXPERIENCE
             </p>
-            <div className="w-48 h-[2px] bg-white/10 rounded-full overflow-hidden">
+            <div className="w-52 h-[2px] bg-white/10 rounded-full overflow-hidden">
               <div 
                 className="h-full bg-white transition-all duration-200 ease-out" 
                 style={{ width: `${loadProgress}%` }}
@@ -244,7 +254,7 @@ export default function CarScrollytelling() {
       </AnimatePresence>
 
       {/* Sticky Canvas Viewport */}
-      <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden bg-[#050505]">
+      <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden bg-[#000000]">
         <canvas
           ref={canvasRef}
           style={{
@@ -254,83 +264,64 @@ export default function CarScrollytelling() {
           className="block select-none pointer-events-none"
         />
 
-        {/* --- Scroll-driven Text Overlays --- */}
+        {/* --- Story Overlays --- */}
 
-        {/* 1. HERO SECTION (0% - Assembled Supercar) */}
+        {/* 0% Scroll: AVENTADOR DECONSTRUCTED */}
         <TextSection 
           scrollYProgress={scrollYProgress} 
           range={[0, 0.08, 0.16]} 
           align="center"
         >
           <p className="text-xs uppercase tracking-[0.4em] text-white/50 mb-3 font-mono">
-            THE FUTURE OF PERFORMANCE
+            LAMBORGHINI EXPLORE
           </p>
-          <h1 className="text-5xl md:text-8xl font-light tracking-tighter text-white uppercase leading-none">
-            ENGINEERED<br />TO MOVE.
+          <h1 className="text-5xl md:text-8xl font-light tracking-tighter text-white/90 uppercase leading-none">
+            AVENTADOR<br />DECONSTRUCTED
           </h1>
         </TextSection>
 
-        {/* 2. FEATURE SECTION #1 (30% - Panel Disassembly) */}
+        {/* 30% Scroll: 770 HP V12 Core */}
         <TextSection 
           scrollYProgress={scrollYProgress} 
-          range={[0.22, 0.35, 0.46]} 
+          range={[0.22, 0.32, 0.44]} 
           align="left"
         >
-          <h2 className="text-4xl md:text-6xl font-light tracking-tighter text-white uppercase mb-4 leading-tight">
-            PRECISION<br />IN EVERY LAYER.
+          <h2 className="text-4xl md:text-7xl font-light tracking-tighter text-white/90 uppercase mb-4 leading-tight">
+            770 HP V12 Core
           </h2>
           <p className="text-lg md:text-xl font-light text-white/60 tracking-tight leading-relaxed">
-            Every component is engineered with purpose.<br className="hidden md:inline" />
-            Nothing unnecessary. Nothing compromised.
+            Naturally aspirated 6.5L V12 engine pushing<br className="hidden md:inline" />
+            8,500 RPM of pure acoustic fury.
           </p>
         </TextSection>
 
-        {/* 3. FEATURE SECTION #2 (60% - Fully Exploded Technical View) */}
+        {/* 60% Scroll: Aerodinamica ALA */}
         <TextSection 
           scrollYProgress={scrollYProgress} 
-          range={[0.52, 0.65, 0.76]} 
+          range={[0.52, 0.62, 0.74]} 
           align="right"
         >
-          <h2 className="text-4xl md:text-6xl font-light tracking-tighter text-white uppercase mb-4 leading-tight">
-            BEAUTY<br />UNDER THE SURFACE.
+          <h2 className="text-4xl md:text-7xl font-light tracking-tighter text-white/90 uppercase mb-4 leading-tight">
+            Aerodinamica ALA
           </h2>
           <p className="text-lg md:text-xl font-light text-white/60 tracking-tight leading-relaxed">
-            From aerodynamic bodywork to the precision-built<br className="hidden md:inline" />
-            systems beneath it, every detail works together.
+            Active aerodynamics matrix dynamically controlling<br className="hidden md:inline" />
+            downforce and aero-vectoring in real time.
           </p>
         </TextSection>
 
-        {/* 4. FINAL SECTION (90% - Reassembly Contraction) */}
+        {/* 90% Scroll: THE ART OF ASSEMBLY */}
         <TextSection 
           scrollYProgress={scrollYProgress} 
-          range={[0.82, 0.89, 0.94]} 
+          range={[0.82, 0.90, 0.98]} 
           align="center"
         >
-          <h2 className="text-5xl md:text-7xl font-light tracking-tighter text-white uppercase mb-3 leading-none">
-            BUILT<br />WITHOUT LIMITS.
+          <h2 className="text-5xl md:text-8xl font-light tracking-tighter text-white/90 uppercase mb-3 leading-none">
+            THE ART<br />OF ASSEMBLY
           </h2>
-          <p className="text-xl md:text-2xl font-light text-white/60 tracking-tight">
-            Performance, redefined.
+          <p className="text-lg md:text-2xl font-light text-white/60 tracking-tight max-w-lg mx-auto mt-4">
+            Every titanium bolt and carbon monocoque panel<br />returning to form.
           </p>
-        </TextSection>
-
-        {/* 5. FINAL CTA SECTION (100% - Fully Reassembled Supercar) */}
-        <TextSection 
-          scrollYProgress={scrollYProgress} 
-          range={[0.95, 0.98, 1.0]} 
-          align="center"
-        >
-          <div className="flex flex-col items-center gap-6 pointer-events-auto">
-            <span className="text-xs uppercase tracking-[0.5em] text-white/40 font-mono">
-              VANTORA
-            </span>
-            <h2 className="text-5xl md:text-8xl font-normal tracking-tighter text-white uppercase">
-              DRIVE THE NEXT.
-            </h2>
-            <button className="mt-4 px-10 py-4 bg-white/5 hover:bg-white/10 text-white border border-white/20 hover:border-white/50 backdrop-blur-md rounded-full text-sm uppercase tracking-[0.2em] font-medium transition-all duration-300 transform hover:scale-105 cursor-pointer shadow-2xl">
-              EXPLORE THE MACHINE
-            </button>
-          </div>
         </TextSection>
 
       </div>

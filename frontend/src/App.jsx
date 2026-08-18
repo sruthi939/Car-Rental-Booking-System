@@ -1,14 +1,12 @@
-import React from 'react'
-import Navbar from './components/Navbar'
-import ExplodedCarShowcase from './components/ExplodedCarShowcase'
+import React from 'react';
+import Navbar from './components/Navbar';
+import ExploreScrollytelling from './components/ExploreScrollytelling';
 
-const App = () => {
+export default function App() {
   return (
-    <div className="bg-slate-950 min-h-screen text-white">
+    <main className="min-h-screen bg-[#000000] text-white selection:bg-white/20 selection:text-white overflow-x-hidden">
       <Navbar />
-      <ExplodedCarShowcase />
-    </div>
-  )
+      <ExploreScrollytelling />
+    </main>
+  );
 }
-
-export default App

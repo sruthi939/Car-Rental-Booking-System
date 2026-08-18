@@ -1,19 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { 
-  Zap, 
-  Shield, 
-  Cpu, 
-  Disc, 
-  Activity, 
-  Sparkles, 
-  RotateCcw, 
-  Play, 
-  Pause, 
-  Layers, 
-  ChevronRight,
-  Video,
-  Monitor
-} from 'lucide-react';
+import { Zap, Cpu, Disc, Activity, Sparkles, RotateCcw, Play, Pause, Layers, ChevronRight, Video, Monitor } from 'lucide-react';
 import { assets } from '../assets/assets';
 
 const CAR_PRESETS = [
@@ -118,7 +104,7 @@ export const ExplodedCarShowcase = () => {
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
   const videoRef = useRef(null);
-  
+
   const [scrollProgress, setScrollProgress] = useState(0);
   const [manualProgress, setManualProgress] = useState(null);
   const [selectedPreset, setSelectedPreset] = useState(CAR_PRESETS[0]);
@@ -126,7 +112,7 @@ export const ExplodedCarShowcase = () => {
   const [isPlayingAuto, setIsPlayingAuto] = useState(false);
   const [inspectedPart, setInspectedPart] = useState(null);
   const [viewMode, setViewMode] = useState('video'); // 'video' | 'canvas'
-  
+
   const animFrameId = useRef(null);
   const smoothProgress = useRef(0);
   const autoPlayAngle = useRef(0);
@@ -140,7 +126,7 @@ export const ExplodedCarShowcase = () => {
       const rect = containerRef.current.getBoundingClientRect();
       const totalScrollableHeight = rect.height - window.innerHeight;
       if (totalScrollableHeight <= 0) return;
-      
+
       const currentScroll = -rect.top;
       const rawProgress = Math.min(1, Math.max(0, currentScroll / totalScrollableHeight));
       setScrollProgress(rawProgress);
@@ -188,7 +174,7 @@ export const ExplodedCarShowcase = () => {
     const render = () => {
       smoothProgress.current += (effectiveProgress - smoothProgress.current) * 0.12;
       const progress = smoothProgress.current;
-      
+
       autoPlayAngle.current += 0.002;
       const hoverYaw = Math.sin(autoPlayAngle.current) * 0.05;
 
@@ -543,7 +529,7 @@ export const ExplodedCarShowcase = () => {
     ctx.save();
     ctx.font = 'bold 10px Outfit, sans-serif';
     const textWidth = ctx.measureText(text).width;
-    
+
     ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
     ctx.strokeStyle = color;
     ctx.lineWidth = 1;
@@ -576,7 +562,7 @@ export const ExplodedCarShowcase = () => {
     <div ref={containerRef} className="relative min-h-[320vh] bg-slate-950 text-slate-100 font-sans selection:bg-blue-500 selection:text-white">
       {/* Sticky Fullscreen Stage */}
       <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col justify-between p-4 md:p-8">
-        
+
         {/* TOP BAR: Header, Mode Switcher & Presets */}
         <header className="relative z-20 flex flex-wrap items-center justify-between gap-4 bg-slate-900/60 backdrop-blur-xl p-4 rounded-2xl border border-slate-800/80 shadow-2xl">
           <div className="flex items-center space-x-3">
@@ -599,21 +585,19 @@ export const ExplodedCarShowcase = () => {
             <div className="flex items-center gap-1 bg-slate-950/80 p-1 rounded-xl border border-slate-800">
               <button
                 onClick={() => setViewMode('video')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                  viewMode === 'video'
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${viewMode === 'video'
                     ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
                     : 'text-slate-400 hover:text-white'
-                }`}
+                  }`}
               >
                 <Video className="w-3.5 h-3.5" /> HD Video
               </button>
               <button
                 onClick={() => setViewMode('canvas')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                  viewMode === 'canvas'
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${viewMode === 'canvas'
                     ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
                     : 'text-slate-400 hover:text-white'
-                }`}
+                  }`}
               >
                 <Monitor className="w-3.5 h-3.5" /> 3D Stage
               </button>
@@ -625,11 +609,10 @@ export const ExplodedCarShowcase = () => {
                 <button
                   key={preset.id}
                   onClick={() => setSelectedPreset(preset)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
-                    selectedPreset.id === preset.id
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${selectedPreset.id === preset.id
                       ? 'bg-slate-800 text-blue-400 border border-blue-500/30'
                       : 'text-slate-400 hover:text-white'
-                  }`}
+                    }`}
                 >
                   {preset.name}
                 </button>
@@ -640,7 +623,7 @@ export const ExplodedCarShowcase = () => {
 
         {/* CENTER STAGE: Video / Canvas Scrub Viewport */}
         <div className="relative flex-1 w-full flex items-center justify-center my-2 overflow-hidden rounded-3xl border border-slate-800/40 bg-slate-950">
-          
+
           {/* Mode A: Scroll-Driven Video Scrubbing (okey_generate_the_video.mp4) */}
           {viewMode === 'video' && assets.car_video && (
             <video
@@ -666,20 +649,19 @@ export const ExplodedCarShowcase = () => {
           <div className="relative z-10 w-full max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pointer-events-none px-4">
             {CAR_PARTS.map((part) => {
               const Icon = part.icon;
-              const isVisible = 
+              const isVisible =
                 (activeFilter === 'all' || activeFilter === part.id) &&
-                effectiveProgress >= part.range[0] && 
+                effectiveProgress >= part.range[0] &&
                 effectiveProgress <= part.range[1];
 
               return (
                 <div
                   key={part.id}
                   onClick={() => setInspectedPart(part)}
-                  className={`pointer-events-auto transition-all duration-500 transform ${
-                    isVisible 
-                      ? 'opacity-100 translate-y-0 scale-100' 
+                  className={`pointer-events-auto transition-all duration-500 transform ${isVisible
+                      ? 'opacity-100 translate-y-0 scale-100'
                       : 'opacity-0 translate-y-8 scale-95 pointer-events-none hidden md:block'
-                  }`}
+                    }`}
                 >
                   <div className="group relative bg-slate-900/75 hover:bg-slate-900/90 backdrop-blur-xl border border-slate-700/60 hover:border-blue-500/50 p-5 rounded-2xl shadow-2xl transition-all cursor-pointer">
                     <div className="flex items-start justify-between mb-3">
@@ -713,7 +695,7 @@ export const ExplodedCarShowcase = () => {
 
         {/* BOTTOM BAR: Scroll Scrub Bar, Filter Tabs & Auto Play */}
         <footer className="relative z-20 bg-slate-900/70 backdrop-blur-xl p-4 rounded-2xl border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4 shadow-2xl">
-          
+
           {/* Component Category Filter Tabs */}
           <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 scrollbar-none">
             {[
@@ -727,11 +709,10 @@ export const ExplodedCarShowcase = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveFilter(tab.id)}
-                className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                  activeFilter === tab.id
+                className={`whitespace-nowrap px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${activeFilter === tab.id
                     ? 'bg-blue-600/20 text-blue-400 border border-blue-500/40'
                     : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-                }`}
+                  }`}
               >
                 {tab.label}
               </button>

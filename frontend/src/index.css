@@ -1,13 +1,48 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100...900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
-* {
-    font-family: "Outfit", sans-serif;
+:root {
+  --bg-color: #000000;
+  --text-primary: rgba(255, 255, 255, 0.90);
+  --text-secondary: rgba(255, 255, 255, 0.60);
+}
+
+html {
+  background: #000000;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: #000000;
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  font-feature-settings: "ss01", "ss02";
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+/* Custom sleek scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #000000;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.4);
 }
 
 @theme {
-    --color-primary: #2563EB;
-    --color-primary-dull: #1F58D8;
-    --color-light: #F1F5F9;
-    --color-borderColor: #c4c7d2;
+  --color-primary: #ffffff;
+  --color-dark: #000000;
 }
